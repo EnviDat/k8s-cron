@@ -1,0 +1,8 @@
+stages:
+  - deploy
+
+helm-deploy:
+  stage: deploy
+  image: bitnami/kubectl:1.21.10
+  script:
+    - apply --namespace cron --file ./cronjob --recursive

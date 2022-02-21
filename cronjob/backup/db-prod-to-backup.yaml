@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: s3-prod-backup
+  namespace: cron
+spec:
+  schedule: "20 1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          hostAliases:
+            - ip: 100.64.87.65
+              hostnames:
+                - "minio.envidat.ch"
+          containers:
+            - name: s3-prod-backup
+              image: docker.io/rclone/rclone
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: rclone-config
+                  mountPath: /config/rclone/rclone.conf
+                  subPath: rclone.conf
+              command:
+                - sh
+                - -c
+                - rclone --verbose sync --checksum switch:envidat minio:envidat-backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: rclone-config
+              secret:
+                secretName: rclone-config

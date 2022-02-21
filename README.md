@@ -1,3 +1,4 @@
 # k8s-cron
 
-Cron job definitions for K8S cluster.
+- Automatic deployment of defined cronjobs into the cluster.
+- Any required secrets must be created in advance, in the `cron` namespace.

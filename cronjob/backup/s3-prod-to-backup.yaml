@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-envidat-backup
+  namespace: cron
+spec:
+  schedule: "40 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+            - name: check-db-ready
+              image: docker.io/postgres:14
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: db-prod-creds
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  until pg_isready -h "$PROD_DB_HOST"; do
+                    echo waiting for database;
+                    sleep 2;
+                  done;
+          containers:
+            - name: backup-db
+              image: docker.io/postgres:14
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: db-prod-creds
+                - secretRef:
+                    name: db-backup-creds
+              env:
+                - name: DB_USER
+                  value: dbenvidat
+                - name: DB_CKAN_NAME
+                  value: envidat
+                - name: DB_DOI_NAME
+                  value: envidat_doi
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  echo "Re-creating databases on $BACKUP_DB_HOST"
+                  PGPASSWORD="$BACKUP_DB_PG_PASS" psql -v ON_ERROR_STOP=1 \
+                    --host "$BACKUP_DB_HOST" --username postgres --dbname postgres <<-EOSQL
+                      DROP DATABASE IF EXISTS "$DB_CKAN_NAME" WITH (FORCE);
+                      CREATE DATABASE "$DB_CKAN_NAME" WITH OWNER="$DB_USER";
+                      DROP DATABASE IF EXISTS "$DB_DOI_NAME" WITH (FORCE);
+                      CREATE DATABASE "$DB_DOI_NAME" WITH OWNER="$DB_USER";
+                  EOSQL
+                  echo "Backup and restoring $DB_CKAN_NAME via pipe to new host."
+                  PGPASSWORD="$PROD_DB_PASS" pg_dump -C --format c \
+                    --host "$PROD_DB_HOST" --username "$DB_USER" "$DB_CKAN_NAME" \
+                    | PGPASSWORD="$BACKUP_DB_PG_PASS" pg_restore \
+                    --create --clean --exit-on-error \
+                    --host "$BACKUP_DB_HOST" --username postgres --dbname postgres
+                  echo "Backup and restoring $DB_DOI_NAME via pipe to new host."
+                  PGPASSWORD="$PROD_DB_PASS" pg_dump -C --format c \
+                    --host "$PROD_DB_HOST" --username "$DB_USER" "$DB_DOI_NAME" \
+                    | PGPASSWORD="$BACKUP_DB_PG_PASS" pg_restore \
+                    --create --clean --exit-on-error \
+                    --host "$BACKUP_DB_HOST" --username postgres --dbname postgres
+                  echo "Adding Postgis extension if does not exist."
+                  PGPASSWORD="$BACKUP_DB_PG_PASS" psql -v ON_ERROR_STOP=1 \
+                    --host "$BACKUP_DB_HOST" --username postgres --dbname postgres <<-EOSQL
+                      CREATE EXTENSION IF NOT EXISTS postgis;
+                      CREATE EXTENSION IF NOT EXISTS postgis_topology;
+                      CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+                      CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+                      ALTER VIEW geometry_columns OWNER TO "$DB_USER";
+                      ALTER TABLE spatial_ref_sys OWNER TO "$DB_USER";
+                  EOSQL
+          restartPolicy: OnFailure
