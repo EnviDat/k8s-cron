@@ -11,7 +11,7 @@ spec:
         spec:
           initContainers:
             - name: check-db-ready
-              image: docker.io/postgres:14
+              image: docker.io/postgis/postgis:14-3.2
               imagePullPolicy: IfNotPresent
               envFrom:
                 - secretRef:
@@ -53,15 +53,15 @@ spec:
                       CREATE DATABASE "$DB_DOI_NAME" WITH OWNER="$DB_USER";
                   EOSQL
                   echo "Backup and restoring $DB_CKAN_NAME via pipe to new host."
-                  PGPASSWORD="$PROD_DB_PASS" pg_dump -C --format c \
+                  PGPASSWORD="$PROD_DB_PASS" pg_dump --verbose --format c \
                     --host "$PROD_DB_HOST" --username "$DB_USER" "$DB_CKAN_NAME" \
-                    | PGPASSWORD="$BACKUP_DB_PG_PASS" pg_restore \
+                    | PGPASSWORD="$BACKUP_DB_PG_PASS" pg_restore --verbose \
                     --create --clean --exit-on-error \
                     --host "$BACKUP_DB_HOST" --username postgres --dbname postgres
                   echo "Backup and restoring $DB_DOI_NAME via pipe to new host."
-                  PGPASSWORD="$PROD_DB_PASS" pg_dump -C --format c \
+                  PGPASSWORD="$PROD_DB_PASS" pg_dump --verbose --format c \
                     --host "$PROD_DB_HOST" --username "$DB_USER" "$DB_DOI_NAME" \
-                    | PGPASSWORD="$BACKUP_DB_PG_PASS" pg_restore \
+                    | PGPASSWORD="$BACKUP_DB_PG_PASS" pg_restore --verbose \
                     --create --clean --exit-on-error \
                     --host "$BACKUP_DB_HOST" --username postgres --dbname postgres
                   echo "Adding Postgis extension if does not exist."
