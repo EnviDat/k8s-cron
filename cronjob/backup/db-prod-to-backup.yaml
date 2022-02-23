@@ -26,7 +26,7 @@ spec:
                   done;
           containers:
             - name: backup-db
-              image: docker.io/postgres:14
+              image: docker.io/postgis/postgis:14-3.2
               imagePullPolicy: IfNotPresent
               envFrom:
                 - secretRef:
