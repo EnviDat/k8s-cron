@@ -9,10 +9,6 @@ spec:
     spec:
       template:
         spec:
-          hostAliases:
-            - ip: 100.64.87.65
-              hostnames:
-                - "minio.envidat.ch"
           containers:
             - name: s3-dev-copy
               image: docker.io/rclone/rclone
