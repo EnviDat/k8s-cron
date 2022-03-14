@@ -28,10 +28,10 @@
 
 - name: db-ckan-wsl-creds
 
-  - key: PROD_DB_HOST
-  - key: PROD_DB_PASS
+  - key: BACKUP_DB_HOST
+  - key: BACKUP_DB_PASS
 
 - name: db-ckan-backup-creds
 
-  - key: BACKUP_DB_HOST
-  - key: BACKUP_DB_PG_PASS
+  - key: RESTORE_DB_HOST
+  - key: RESTORE_DB_PG_PASS
