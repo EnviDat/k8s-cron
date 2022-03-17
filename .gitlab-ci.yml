@@ -1,6 +1,13 @@
 stages:
   - deploy
 
+workflow:
+  rules:
+    - changes:
+        - "./*"
+      when: never
+    - when: always
+
 helm-deploy:
   stage: deploy
   image: bitnami/kubectl:1.21.10
