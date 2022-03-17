@@ -4,7 +4,7 @@ stages:
 workflow:
   rules:
     - changes:
-        - "./*"
+        - "*"
       when: never
     - when: always
 
