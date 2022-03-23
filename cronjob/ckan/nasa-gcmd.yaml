@@ -9,14 +9,17 @@ spec:
     spec:
       template:
         spec:
-          hostAliases:
-            - ip: 100.64.87.65
-              hostnames:
-                - "registry.envidat.ch"
           containers:
             - name: ckan-nasa-gcmd
               image: registry.envidat.ch/envidat/nasa-gcmd:latest
               imagePullPolicy: IfNotPresent
+              env:
+                - name: LOG_LEVEL
+                  value: DEBUG
+                - name: AWS_BUCKET_NAME
+                  value: nasa
+                - name: CKAN_HOST
+                  value: https://www.envidat.ch
               envFrom:
                 - secretRef:
                     name: switch-s3-creds
