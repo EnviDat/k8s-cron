@@ -4,7 +4,7 @@ metadata:
   name: s3-prod-backup
   namespace: cron
 spec:
-  schedule: "0 1 * * *"
+  schedule: "* 1 * * *"
   jobTemplate:
     spec:
       template:

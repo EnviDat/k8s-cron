@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ckan-nasa-gcmd
+  namespace: cron
+spec:
+  schedule: "* 3 * * 1,4"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          hostAliases:
+            - ip: 100.64.87.65
+              hostnames:
+                - "registry.envidat.ch"
+          containers:
+            - name: ckan-nasa-gcmd
+              image: registry.envidat.ch/envidat/nasa-gcmd:latest
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: switch-s3-creds
+          restartPolicy: OnFailure
