@@ -1,4 +1,11 @@
 repos:
+  # Versioning: Commit Messages & Changelog
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: master
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
   # Autoformat: YAML, JSON, Markdown, etc.
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.0
