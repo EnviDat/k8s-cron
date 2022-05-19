@@ -4,7 +4,7 @@ metadata:
   name: s3-staging-copy
   namespace: cron
 spec:
-  schedule: "* 0 * * *"
+  schedule: "0 0 * * *"
   jobTemplate:
     spec:
       template:
