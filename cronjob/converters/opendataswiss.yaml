@@ -20,5 +20,5 @@ spec:
                   value: https://www.envidat.ch
               envFrom:
                 - secretRef:
-                    name: switch-s3-creds
+                    name: switch-s3-py-env
           restartPolicy: OnFailure
