@@ -13,6 +13,6 @@ helm-deploy:
   stage: deploy
   image: bitnami/kubectl:1.21.10
   script:
-    - kubectl apply --namespace cron -f ./infra --recursive
+    - kubectl apply --namespace kube-system -f ./infra --recursive
     - kubectl apply --namespace cron -f ./storage --recursive
     - kubectl apply --namespace cron -f ./cronjob --recursive
