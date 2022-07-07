@@ -1,16 +1,16 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: s3-staging-copy
+  name: s3-dev-copy
   namespace: cron
 spec:
-  schedule: "0 0 * * *"
+  schedule: "30 2 * * *"
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-            - name: s3-staging-copy
+            - name: s3-dev-copy
               image: docker.io/rclone/rclone
               imagePullPolicy: IfNotPresent
               volumeMounts:
@@ -20,7 +20,7 @@ spec:
               command:
                 - sh
                 - -c
-                - rclone --verbose sync --checksum switch:envidat switch:envidat-staging
+                - rclone --verbose sync --checksum switch:envidat-staging switch:envidat-dev
           restartPolicy: OnFailure
           volumes:
             - name: rclone-config

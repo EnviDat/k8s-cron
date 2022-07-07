@@ -35,3 +35,15 @@
 
   - key: RESTORE_DB_HOST
   - key: RESTORE_DB_PG_PASS
+
+## Schedules
+
+| Time  | Type | From                   | To                     | Script                        |
+| ----- | ---- | ---------------------- | ---------------------- | ----------------------------- |
+| 24:00 | S3   | NFS CKAN Resources     | SWITCH/envidat         | s3-1-nfs-to-s3.yaml           |
+| 00:05 | DB   | WSL                    | K8 Backup              | db-prod-to-backup.yaml        |
+| 01:00 | S3   | SWITCH/envidat         | MINIO/envidat-backup   | s3-2-prod-to-backup.yaml      |
+| 01:05 | DB   | K8 Backup              | S3 SQL Dump            | db-prod-s3-dump.yaml          |
+| 02:00 | S3   | SWITCH/envidat         | SWITCH/envidat-staging | s3-3-prod-to-staging.yaml     |
+| 02:30 | S3   | SWITCH/envidat-staging | SWITCH/envidat-dev     | s3-4-staging-to-dev.yaml      |
+| 03:00 | S3   | NFS CKAN Uploads       | SWITCH/envicloud       | s3-5-nfs-envicloud-to-s3.yaml |

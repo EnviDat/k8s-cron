@@ -4,7 +4,7 @@ metadata:
   name: db-envidat-backup
   namespace: cron
 spec:
-  schedule: "40 0 * * *"
+  schedule: "5 0 * * *"
   jobTemplate:
     spec:
       template:
@@ -66,13 +66,13 @@ spec:
                   PGPASSWORD="$BACKUP_DB_PASS" pg_dump --verbose --format c \
                     --host "$BACKUP_DB_HOST" --username "$DB_USER" "$DB_CKAN_NAME" \
                     | PGPASSWORD="$RESTORE_DB_PG_PASS" pg_restore --verbose \
-                    --create --clean --exit-on-error \
+                    --create --clean --if-exists --exit-on-error \
                     --host "$RESTORE_DB_HOST" --username postgres --dbname postgres
                   echo "Backup and restoring $DB_DOI_NAME via pipe to new host."
                   PGPASSWORD="$BACKUP_DB_PASS" pg_dump --verbose --format c \
                     --host "$BACKUP_DB_HOST" --username "$DB_USER" "$DB_DOI_NAME" \
                     | PGPASSWORD="$RESTORE_DB_PG_PASS" pg_restore --verbose \
-                    --create --clean --exit-on-error \
+                    --create --clean --if-exists --exit-on-error \
                     --host "$RESTORE_DB_HOST" --username postgres --dbname postgres
                   echo "Adding Postgis extension if does not exist."
                   PGPASSWORD="$RESTORE_DB_PG_PASS" psql -v ON_ERROR_STOP=1 \

@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-envidat-s3-dump
+  namespace: cron
+spec:
+  schedule: "05 1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          hostAliases:
+            - ip: 10.30.1.29
+              hostnames:
+                - "postgres.wsl.ch"
+          volumes:
+            - name: rclone-config
+              secret:
+                secretName: rclone-config
+            - name: db-dumps
+              emptyDir: {}
+          initContainers:
+            - name: check-db-ready
+              image: docker.io/postgis/postgis:14-3.2
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: db-ckan-backup-creds
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  until pg_isready -h "$RESTORE_DB_HOST"; do
+                    echo "waiting for restore database to be ready";
+                    sleep 2;
+                  done;
+            - name: dump-db
+              image: docker.io/postgis/postgis:14-3.2
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: db-ckan-backup-creds
+              env:
+                - name: DB_CKAN_NAME
+                  value: envidat
+                - name: DB_DOI_NAME
+                  value: envidat_doi
+              volumeMounts:
+                - name: db-dumps
+                  mountPath: /data
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  echo "Dumping database $DB_CKAN_NAME."
+                  PGPASSWORD="$RESTORE_DB_PG_PASS" pg_dump --verbose --format c \
+                    --create --clean --if-exists \
+                    --host "$RESTORE_DB_HOST" --username postgres \
+                    -f /data/$(date +%Y-%m-%d)-envidat_db_dump.tar.gz "$DB_CKAN_NAME"
+                  echo "Dumping database $DB_DOI_NAME."
+                  PGPASSWORD="$RESTORE_DB_PG_PASS" pg_dump --verbose --format c \
+                    --create --clean --if-exists \
+                    --host "$RESTORE_DB_HOST" --username postgres \
+                    -f /data/$(date +%Y-%m-%d)-doi_db_dump.tar.gz "$DB_DOI_NAME"
+          containers:
+            - name: copy-to-s3
+              image: docker.io/rclone/rclone
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: rclone-config
+                  mountPath: /config/rclone/rclone.conf
+                  subPath: rclone.conf
+                - name: db-dumps
+                  mountPath: /data
+              command:
+                - sh
+                - -c
+                - rclone --verbose copy /data/ switch:db-backup -P --exclude '.*{/**,}'
+          restartPolicy: OnFailure
