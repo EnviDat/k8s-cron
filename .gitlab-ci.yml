@@ -3,12 +3,11 @@ stages:
 
 workflow:
   rules:
-    - changes:
+    - if: '$CI_PIPELINE_SOURCE != "web"'
+      changes:
         - "*"
       when: never
     - when: always
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: always
 
 helm-deploy:
   stage: deploy
