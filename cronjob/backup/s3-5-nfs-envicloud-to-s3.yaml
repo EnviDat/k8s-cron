@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nfs-envicloud-s3-replica
+  namespace: cron
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: nfs-envicloud-s3-replica
+              image: docker.io/rclone/rclone
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: rclone-config
+                  mountPath: /config/rclone/rclone.conf
+                  subPath: rclone.conf
+                - name: envidat-nfs
+                  mountPath: /envidat
+              command:
+                - sh
+                - -c
+                - rclone --verbose sync /envidat/ckan/default/storage/uploads/ switch:envicloud -P --exclude '.*{/**,}'
+          hostAliases:
+            - ip: 10.30.1.245
+              hostnames:
+                - "svm-envidat.wsl.ch"
+          restartPolicy: OnFailure
+          volumes:
+            - name: rclone-config
+              secret:
+                secretName: rclone-config
+            # - name: envidat-nfs
+            #   nfs:
+            #     server: svm-envidat.wsl.ch
+            #     path: /vol_data
+            - name: envidat-nfs
+              persistentVolumeClaim:
+                claimName: envidat-nfs-pvc
