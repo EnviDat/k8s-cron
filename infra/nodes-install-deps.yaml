@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: k8s-node-install-deps
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: k8s-node-install-deps
+  template:
+    metadata:
+      labels:
+        name: k8s-node-install-deps
+    spec:
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: root-mount
+          hostPath:
+            path: /
+      initContainers:
+        - name: apt-install
+          image: docker.io/ubuntu:20.04
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: root-mount
+              mountPath: /root
+          command:
+            - nsenter
+            - --mount=/proc/1/ns/mnt
+            - --
+            - bash
+            - -c
+            - >
+              apt-get update &&
+              DEBIAN_FRONTEND=noninteractive apt-get install
+              -y --no-install-recommends
+              open-iscsi
+              nfs-common
+            - modprobe nfs
+            - |
+              systemctl -q enable iscsid
+              systemctl start iscsid
+              modprobe iscsi_tcp
+      containers:
+        - name: sleep
+          image: k8s.gcr.io/pause:3.1
+  updateStrategy:
+    type: RollingUpdate

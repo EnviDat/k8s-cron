@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: k8s-node-add-registry
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: k8s-node-add-registry
+  template:
+    metadata:
+      labels:
+        name: k8s-node-add-registry
+    spec:
+      volumes:
+        - name: etc-containerd
+          hostPath:
+            path: /etc/containerd/registry.envidat.ch
+        - name: k3s-config-dir
+          hostPath:
+            path: /etc/rancher/k3s
+        - name: ca-cert
+          secret:
+            secretName: registry-ca
+        - name: k3s-registry-yaml
+          secret:
+            secretName: registry-k3s-config
+      initContainers:
+        - name: copy-config
+          image: docker.io/ubuntu:20.04
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: etc-containerd
+              mountPath: /etc/containerd/registry.envidat.ch
+            - name: k3s-config-dir
+              mountPath: /etc/rancher/k3s
+            - name: ca-cert
+              mountPath: /home/cert
+            - name: k3s-registry-yaml
+              mountPath: /home/yaml
+          command:
+            - sh
+            - -c
+            - |
+              echo "Copying /home/cert/registry-ca to /etc/containerd/registry.envidat.ch/ca.crt"
+              cp /home/cert/registry-ca /etc/containerd/registry.envidat.ch/ca.crt
+              echo "Copying /home/yaml/registries.yaml to /etc/rancher/k3s/registries.yaml"
+              cp /home/yaml/registries.yaml /etc/rancher/k3s/registries.yaml
+              echo "Changing permissions of files to 400 for root (read-only)"
+              chmod 400 /etc/containerd/registry.envidat.ch/ca.crt /etc/rancher/k3s/registries.yaml
+      containers:
+        - name: sleep
+          image: k8s.gcr.io/pause:3.1
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    type: RollingUpdate
