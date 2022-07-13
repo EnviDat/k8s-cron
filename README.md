@@ -36,7 +36,7 @@
   - key: RESTORE_DB_HOST
   - key: RESTORE_DB_PG_PASS
 
-## Schedules
+## Backup Schedules
 
 | Time  | Type | From                   | To                     | Script                        |
 | ----- | ---- | ---------------------- | ---------------------- | ----------------------------- |
@@ -47,3 +47,10 @@
 | 02:00 | S3   | SWITCH/envidat         | SWITCH/envidat-staging | s3-3-prod-to-staging.yaml     |
 | 02:30 | S3   | SWITCH/envidat-staging | SWITCH/envidat-dev     | s3-4-staging-to-dev.yaml      |
 | 03:00 | S3   | NFS CKAN Uploads       | SWITCH/envicloud       | s3-5-nfs-envicloud-to-s3.yaml |
+
+## Other Schedules
+
+| Day | Time  | Type      | Script             |
+| --- | ----- | --------- | ------------------ |
+| 1,4 | 03:15 | Open data | nasa-gcmd.yaml     |
+| 1,4 | 03:15 | Open data | opendataswiss.yaml |
