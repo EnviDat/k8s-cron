@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: drone-s3-to-nfs
+  namespace: cron
+spec:
+  schedule: "0 4 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: drone-s3-to-nfs
+              image: docker.io/rclone/rclone
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: rclone-config
+                  mountPath: /config/rclone/rclone.conf
+                  subPath: rclone.conf
+                - name: drone-data-nfs
+                  mountPath: /drone_data
+              command:
+                - sh
+                - -c
+                - rclone --verbose sync switch:drone-data /drone_data/
+          hostAliases:
+            - ip: 10.30.1.245
+              hostnames:
+                - "svm-envidat.wsl.ch"
+          restartPolicy: OnFailure
+          volumes:
+            - name: rclone-config
+              secret:
+                secretName: rclone-config
+            - name: drone-data-nfs
+              persistentVolumeClaim:
+                claimName: drone-data-nfs-pvc
