@@ -22,7 +22,7 @@ spec:
               command:
                 - sh
                 - -c
-                - rclone --verbose sync /envidat/ckan/default/storage/uploads/ switch:envicloud -P --exclude '.*{/**,}'
+                - rclone --verbose sync /envidat/ckan/default/storage/uploads/ switch:envicloud --exclude '.*{/**,}'
           hostAliases:
             - ip: 10.30.1.245
               hostnames:
