@@ -47,6 +47,7 @@
 | 02:00 | S3   | SWITCH/envidat         | SWITCH/envidat-staging | s3-3-prod-to-staging.yaml     |
 | 02:30 | S3   | SWITCH/envidat-staging | SWITCH/envidat-dev     | s3-4-staging-to-dev.yaml      |
 | 03:00 | S3   | NFS CKAN Uploads       | SWITCH/envicloud       | s3-5-nfs-envicloud-to-s3.yaml |
+| 04:00 | S3   | SWITCH/drone-data      | NFS /vol_dronedata     | s3-6-drone-s3-to-nfs.yaml     |
 
 ## Other Schedules
 
