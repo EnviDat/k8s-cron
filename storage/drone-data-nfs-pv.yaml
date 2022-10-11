@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: drone-data-nfs-pv
+spec:
+  capacity:
+    storage: 9Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: 10.30.1.245
+    path: "/vol_dronedata"
