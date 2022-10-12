@@ -27,7 +27,9 @@ spec:
             - ip: 10.30.1.245
               hostnames:
                 - "svm-envidat.wsl.ch"
-          restartPolicy: OnFailure
+          restartPolicy: Never
+          activeDeadlineSeconds: 18000
+          concurrencyPolicy: Replace
           volumes:
             - name: rclone-config
               secret:
