@@ -5,6 +5,7 @@ metadata:
   namespace: cron
 spec:
   schedule: "0 4 * * *"
+  concurrencyPolicy: Replace
   jobTemplate:
     spec:
       template:
@@ -28,8 +29,6 @@ spec:
               hostnames:
                 - "svm-envidat.wsl.ch"
           restartPolicy: Never
-          activeDeadlineSeconds: 18000
-          concurrencyPolicy: Replace
           volumes:
             - name: rclone-config
               secret:
