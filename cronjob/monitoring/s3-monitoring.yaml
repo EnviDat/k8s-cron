@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: s3-monitoring
+  namespace: cron
+spec:
+  schedule: "0 19 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/log-format: python
+        spec:
+          containers:
+            - name: s3-monitoring
+              image: registry.envidat.ch/envidat/s3-monitoring:latest
+              imagePullPolicy: Always
+              env:
+                - name: LOG_LEVEL
+                  value: DEBUG
+              envFrom:
+                - secretRef:
+                    name: switch-s3-py-env
+                - secretRef:
+                    name: smtp-vars
+                - secretRef:
+                    name: slack-vars
+          hostAliases:
+            - ip: 10.30.1.65
+              hostnames:
+                - "verse.wsl.ch"
+          restartPolicy: OnFailure

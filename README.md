@@ -38,7 +38,7 @@
 
 ## Backup Schedules
 
-| Time  | Type | From                   | To                     | Script                        |
+| Time  | Type | From                   | To                     | File                          |
 | ----- | ---- | ---------------------- | ---------------------- | ----------------------------- |
 | 24:00 | S3   | NFS CKAN Resources     | SWITCH/envidat         | s3-1-nfs-to-s3.yaml           |
 | 00:05 | DB   | WSL                    | K8 Backup              | db-prod-to-backup.yaml        |
@@ -51,7 +51,8 @@
 
 ## Other Schedules
 
-| Day | Time  | Type      | Script             |
-| --- | ----- | --------- | ------------------ |
-| 1,4 | 03:15 | Open data | nasa-gcmd.yaml     |
-| 1,4 | 03:15 | Open data | opendataswiss.yaml |
+| Day | Time  | Type       | File               |
+| --- | ----- | ---------- | ------------------ |
+| 1,4 | 03:15 | Open data  | nasa-gcmd.yaml     |
+| 1,4 | 03:15 | Open data  | opendataswiss.yaml |
+| All | 19:00 | Monitoring | s3-monitoring.yaml |
