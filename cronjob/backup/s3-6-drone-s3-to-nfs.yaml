@@ -23,7 +23,7 @@ spec:
               command:
                 - sh
                 - -c
-                - rclone --verbose sync switch:drone-data /drone_data/
+                - rclone --verbose sync envidat02:drone /drone_data/
           hostAliases:
             - ip: 10.30.1.245
               hostnames:
